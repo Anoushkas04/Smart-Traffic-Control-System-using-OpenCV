@@ -96,4 +96,3 @@ class SignalController:
         
         # Default return for safety, though it should not be reached with proper state management
         return {'north': 'RED', 'south': 'RED', 'east': 'RED', 'west': 'RED'}
-

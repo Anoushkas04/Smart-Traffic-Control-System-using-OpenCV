@@ -55,9 +55,11 @@ def main():
         # ---- Step 1: Density detection for each ROI ----
         for name, roi_poly in rois.items():
             cv2.polylines(output_frame, [roi_poly], isClosed=True, color=(255, 255, 0), thickness=2)
-            vehicle_count, contours = density_estimator.estimate_density(frame, roi_poly)
+            vehicle_count, bounding_boxes = density_estimator.estimate_density(frame, roi_poly)
             densities[name] = vehicle_count
-            cv2.drawContours(output_frame, contours, -1, (0, 255, 0), 2)
+            for box in bounding_boxes:
+                x1, y1, x2, y2 = box
+                cv2.rectangle(output_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
         # ---- Step 2: Compute time delta ----
         curr_time = time.time()
@@ -89,6 +91,18 @@ def main():
         cv2.putText(output_frame, f"Phase: {controller.state}", (10, 90),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
         cv2.putText(output_frame, f"Time in Phase: {controller.time_in_state:.1f}s", (10, 120),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+
+        # Calculate and display time remaining in phase
+        time_remaining = 0
+        if controller.state == controller.NS_GREEN or controller.state == controller.EW_GREEN:
+            time_remaining = controller.max_green_time - controller.time_in_state
+        elif controller.state == controller.NS_YELLOW or controller.state == controller.EW_YELLOW:
+            time_remaining = controller.yellow_time - controller.time_in_state
+        elif controller.state == controller.ALL_RED:
+            time_remaining = controller.all_red_time - controller.time_in_state
+        
+        cv2.putText(output_frame, f"Time Left: {max(0, time_remaining):.1f}s", (10, 150),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
         # ---- Step 6: Log performance ----
