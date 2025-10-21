@@ -37,7 +37,7 @@ def main():
     rois = {'ns': roi_ns, 'ew': roi_ew}
 
     # 4️⃣ Initialize modules
-    controller = SignalController(min_green_time=8, max_green_time=25, yellow_time=3, all_red_time=2)
+    controller = SignalController(min_green_time=5, max_green_time=10, yellow_time=2, all_red_time=1)
     density_estimator = TrafficDensityEstimator()
     logger = PerformanceLogger("performance_log.csv")
 
@@ -96,7 +96,7 @@ def main():
         # Calculate and display time remaining in phase
         time_remaining = 0
         if controller.state == controller.NS_GREEN or controller.state == controller.EW_GREEN:
-            time_remaining = controller.max_green_time - controller.time_in_state
+            time_remaining = controller.green_duration - controller.time_in_state
         elif controller.state == controller.NS_YELLOW or controller.state == controller.EW_YELLOW:
             time_remaining = controller.yellow_time - controller.time_in_state
         elif controller.state == controller.ALL_RED:

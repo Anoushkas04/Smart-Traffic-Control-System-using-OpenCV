@@ -30,13 +30,14 @@ class SignalController:
         self.state = default_phase
         self.previous_state = None
         self.time_in_state = 0
+        self.green_duration = self.max_green_time
 
     def update(self, densities, dt):
         """
         Updates the intersection state based on traffic densities and elapsed time.
-        :param densities: A dictionary with vehicle counts for each phase, e.g., {\'ns\': 10, \'ew\': 3}.
+        :param densities: A dictionary with vehicle counts for each phase, e.g., {'ns': 10, 'ew': 3}.
         :param dt: The time delta (in seconds) since the last update.
-        :return: A dictionary representing the color of each signal, e.g., {\'north\': \'GREEN\', ...}.
+        :return: A dictionary representing the color of each signal, e.g., {'north': 'GREEN', ...}.
         """
         self.time_in_state += dt
         ns_vehicles = densities.get('ns', 0)
@@ -44,10 +45,7 @@ class SignalController:
 
         # --- State Transition Logic ---
         if self.state == self.NS_GREEN:
-            # Switch if max time is exceeded, or if min time is passed and the other direction has significant traffic
-            switch_to_ew = self.time_in_state > self.max_green_time or \
-                           (self.time_in_state > self.min_green_time and ew_vehicles > ns_vehicles * 1.5 and ew_vehicles > 3)
-            if switch_to_ew:
+            if self.time_in_state >= self.green_duration:
                 self._transition_to(self.NS_YELLOW)
 
         elif self.state == self.NS_YELLOW:
@@ -55,10 +53,7 @@ class SignalController:
                 self._transition_to(self.ALL_RED)
 
         elif self.state == self.EW_GREEN:
-            # Switch if max time is exceeded, or if min time is passed and the other direction has significant traffic
-            switch_to_ns = self.time_in_state > self.max_green_time or \
-                           (self.time_in_state > self.min_green_time and ns_vehicles > ew_vehicles * 1.5 and ns_vehicles > 3)
-            if switch_to_ns:
+            if self.time_in_state >= self.green_duration:
                 self._transition_to(self.EW_YELLOW)
 
         elif self.state == self.EW_YELLOW:
@@ -70,10 +65,34 @@ class SignalController:
                 # Transition to the next green phase based on which yellow phase came before
                 if self.previous_state == self.NS_YELLOW:
                     self._transition_to(self.EW_GREEN)
+                    self.green_duration = self._calculate_green_duration(ew_vehicles, ns_vehicles)
                 else:  # Assumes previous_state was EW_YELLOW
                     self._transition_to(self.NS_GREEN)
+                    self.green_duration = self._calculate_green_duration(ns_vehicles, ew_vehicles)
 
         return self._get_signal_colors()
+
+    def _calculate_green_duration(self, primary_traffic, secondary_traffic):
+        """
+        Calculates a dynamic green light duration based on traffic conditions.
+        This heuristic can be tuned for better performance.
+        """
+        # Start with a base of min_green_time
+        duration = self.min_green_time
+
+        # Increase duration based on the number of vehicles in the primary direction
+        if primary_traffic > 5:
+            duration += 5
+        if primary_traffic > 10:
+            duration += 5
+        
+        # If there's heavy traffic in the secondary direction, consider reducing the green time
+        # but not below the minimum, to prevent starvation.
+        if secondary_traffic > 10 and duration > self.min_green_time + 5:
+            duration -= 5
+
+        # Ensure the duration is within the min/max bounds
+        return max(self.min_green_time, min(duration, self.max_green_time))
 
     def _transition_to(self, new_state):
         """Helper to transition to a new state and reset the timer."""
