@@ -1,4 +1,5 @@
 # src/main.py
+# src/main.py
 import cv2
 import time
 import numpy as np
@@ -8,8 +9,7 @@ from performance_logger import PerformanceLogger
 
 def main():
     # 1️⃣ Video input
-    # video_path = "/Users/raman/Downloads/22967805_top-view-of-crossroads-with-car-traffic_by_a_medvedkov_preview.mp4"
-    video_path = '/Users/raman/Projects/Labs/cvLab/traffic-control/data/test_videos/sample4.mp4'
+    video_path = 'data/test_videos/sample6.mp4'
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -97,7 +97,7 @@ def main():
         # Calculate and display time remaining in phase
         time_remaining = 0
         if controller.state == controller.NS_GREEN or controller.state == controller.EW_GREEN:
-            time_remaining = controller.green_duration - controller.time_in_state
+            time_remaining = controller.max_green_time - controller.time_in_state
         elif controller.state == controller.NS_YELLOW or controller.state == controller.EW_YELLOW:
             time_remaining = controller.yellow_time - controller.time_in_state
         elif controller.state == controller.ALL_RED:
