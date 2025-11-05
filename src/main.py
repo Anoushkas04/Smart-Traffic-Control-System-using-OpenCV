@@ -8,7 +8,8 @@ from performance_logger import PerformanceLogger
 
 def main():
     # 1️⃣ Video input
-    video_path = "/Users/raman/Downloads/22967805_top-view-of-crossroads-with-car-traffic_by_a_medvedkov_preview.mp4"
+    # video_path = "/Users/raman/Downloads/22967805_top-view-of-crossroads-with-car-traffic_by_a_medvedkov_preview.mp4"
+    video_path = '/Users/raman/Projects/Labs/cvLab/traffic-control/data/test_videos/sample4.mp4'
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
