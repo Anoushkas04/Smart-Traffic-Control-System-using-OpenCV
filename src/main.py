@@ -1,5 +1,7 @@
 # src/main.py
-# src/main.py
+import os
+import sys
+import argparse
 import cv2
 import time
 import numpy as np
@@ -8,12 +10,33 @@ from traffic_density import TrafficDensityEstimator
 from performance_logger import PerformanceLogger
 
 def main():
-    # 1️⃣ Video input
-    video_path = 'data/test_videos/sample6.mp4'
-    cap = cv2.VideoCapture(video_path)
+    parser = argparse.ArgumentParser(description="Smart Traffic Control System")
+    parser.add_argument("--video", type=str, default=None, help="Path to input video file or webcam index (0, 1, etc.)")
+    args = parser.parse_args()
+
+    # 1️⃣ Resolve video source
+    if args.video is not None:
+        video_src = int(args.video) if args.video.isdigit() else args.video
+    else:
+        # Check standard relative locations
+        candidate_paths = [
+            'data/test_videos/sample6.mp4',
+            'src/data/test_videos/sample6.mp4',
+            os.path.join(os.path.dirname(__file__), 'data', 'test_videos', 'sample6.mp4')
+        ]
+        video_src = None
+        for p in candidate_paths:
+            if os.path.exists(p):
+                video_src = p
+                break
+        if video_src is None:
+            video_src = 0  # Fallback to webcam
+
+    print(f"🎥 Loading video source: {video_src}")
+    cap = cv2.VideoCapture(video_src)
 
     if not cap.isOpened():
-        print("❌ Cannot open camera/video")
+        print(f"❌ Cannot open camera/video: {video_src}")
         return
 
     # 2️⃣ Get frame dimensions to define ROIs

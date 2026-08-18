@@ -1,11 +1,15 @@
 
+import os
 import cv2
 import joblib
 import numpy as np
 from skimage.feature import hog
 
 class VehicleClassifier:
-    def __init__(self, model_path='src/models/svm_classifier.pkl'):
+    def __init__(self, model_path=None):
+        if model_path is None:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            model_path = os.path.join(base_dir, 'models', 'svm_classifier.pkl')
         self.model = joblib.load(model_path)
 
     def classify(self, image):

@@ -32,18 +32,16 @@ def extract_hog_features(images):
 
 def main():
     # Define paths to the dataset
-    two_wheeler_path = 'src/data/training/vehicles/2wheelers'
-    four_wheeler_path = 'src/data/training/vehicles/4wheelers'
+    vehicle_path = 'src/data/training/vehicles'
     non_vehicle_path = 'src/data/training/non_vehicles'
 
     # Load images and labels
-    two_wheeler_images, two_wheeler_labels = load_images_from_folder(two_wheeler_path, 1)
-    four_wheeler_images, four_wheeler_labels = load_images_from_folder(four_wheeler_path, 2)
+    vehicle_images, vehicle_labels = load_images_from_folder(vehicle_path, 1)
     non_vehicle_images, non_vehicle_labels = load_images_from_folder(non_vehicle_path, 0)
 
     # Combine the datasets
-    images = two_wheeler_images + four_wheeler_images + non_vehicle_images
-    labels = two_wheeler_labels + four_wheeler_labels + non_vehicle_labels
+    images = vehicle_images + non_vehicle_images
+    labels = vehicle_labels + non_vehicle_labels
 
     # Extract HOG features
     features = extract_hog_features(images)
